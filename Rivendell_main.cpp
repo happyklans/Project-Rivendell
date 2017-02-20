@@ -70,10 +70,10 @@ vector<double> edge_data::return_contextual_values()
 	return contextual_values;
 }
 
-vector<vector<int> > pop_adj_lst(vector<edge> graph, int node_num) // returns a vector in which all the elements are int vectors which represent 
+vector<vector<int> > populate_adj_lst(vector<edge> graph, int node_num) // returns a vector in which all the elements are int vectors which represent 
 {																	//the adjacent edges atached to each node. 
 	edge_data iter_info(0, 0, 0, 0); //calls the default constructor
-	int nodes;
+
 	int node_ID;
 	int edge_ID;
 	int edges;
@@ -90,28 +90,85 @@ vector<vector<int> > pop_adj_lst(vector<edge> graph, int node_num) // returns a 
 
 	for (; node_ID <= node_num; node_ID++);
 	{
-
-
 		for (; edge_ID < edges; edge_ID++)
 		{
-
-
-			if (iter_info.head_val == node_ID)
+			if (iter_info.head_val() == node_ID)
 			{
 				adjlist[node_ID] += edge_ID;
-				cout << adjlist[edge_ID] << "\n";
-				iter_info.update_data(graph[edge_ID].head, graph[edge_ID].tail, graph[edge_ID].cost, graph[edge_ID].cap);
-			}
 
-			adjlistholder[node_ID] = adjlist;
-			adjlist.clear();
+			}
+			iter_info.update_data(graph[edge_ID].head, graph[edge_ID].tail, graph[edge_ID].cost, graph[edge_ID].cap); // grab new info
+
+			adjlistholder[node_ID] = adjlist; //add list of adjacent edges to adjacent edge superstructure
+			adjlist.clear(); // empty adjlist for next iteration
 		}
 	}
 
 	return(adjlistholder);
 }
-vector<vector<string> > readIn(vector<vector<string> > vect, string filename);
 
+vector<vector<string> > readIn(vector<vector<string> > vect, string filename)
+{
+
+	fstream file;
+	file.open(filename, ios::in);
+	int i = 0, k = 0;
+	string temp;
+	string temp1;
+	string temp2;
+	string temp3;
+	int colnum;
+
+	// detect the number of elements in a row
+	getline(file, temp);
+	colnum = std::count(temp.begin(), temp.end(), ',');
+	// return to beginning of file
+	file.seekg(0);
+
+	// make sure there are no extra lines at the end of the file nor spaces!!!!!
+	while (!file.eof())
+	{
+
+		// initial push into one dimention 
+		vect.push_back(vector<string>());
+		for (k = 0; k < colnum; k++)
+		{
+			getline(file, temp, ',');
+			vect[i].push_back(temp);
+		}
+
+		getline(file, temp2);
+		vect[i].push_back(temp2);
+
+		//if (temp[0] == " ")
+		//{
+		//	// swap each character and pop one off the end
+		//}
+
+
+
+		//stringstream ss;
+		//ss << i;
+		//temp3 = ss.str();
+
+		//vect[i].push_back(temp3);
+
+
+
+		i++;
+
+	}
+
+
+
+
+
+
+
+
+	return vect;
+
+}
 
 //
 //[city name][][][][][][][][][][][][][][][][][][][][][][][][][][][]
@@ -212,8 +269,10 @@ int main()
 	// Initialize graph as vector of edges
 	vector<edge> graph;
 	int count = 0;
-	for (int j = 0; j < HOSTNUM; j++) {
-		for (int i = 0; i < SOURCENUM; i++) {
+	for (int j = 0; j < HOSTNUM; j++)
+	{
+		for (int i = 0; i < SOURCENUM; i++)
+		{
 			graph.push_back(edge());
 			graph[count].cost = pref[j][i];
 			graph[count].cap = capacity[j];
@@ -222,7 +281,9 @@ int main()
 			count++;
 		}
 	}
-	for (int j = 0; j < HOSTNUM; j++) {
+
+	for (int j = 0; j < HOSTNUM; j++)
+	{
 		graph.push_back(edge());
 		graph[count].cost = balance[j];
 		graph[count].cap = capacity[j];
@@ -233,7 +294,8 @@ int main()
 
 	// Create residual edges at odd indexes
 	unsigned int sz = graph.size();
-	for (unsigned int i = 0; i < sz; i++) {
+	for (unsigned int i = 0; i < sz; i++)
+	{
 		graph.insert(graph.begin() + 2 * i + 1, edge());
 		graph[2 * i + 1].cost = -graph[2 * i].cost;
 		graph[2 * i + 1].cap = 0;
@@ -247,68 +309,8 @@ int main()
 	cin.get();
 	cin.get();
 
-}
-
-vector<vector<string> > readIn(vector<vector<string> > vect, string filename)
-{
-
-	fstream file;
-	file.open(filename, ios::in);
-	int i = 0, k = 0;
-	string temp;
-	string temp1;
-	string temp2;
-	string temp3;
-	int colnum;
-
-	// detect the number of elements in a row
-	getline(file, temp);
-	colnum = std::count(temp.begin(), temp.end(), ',');
-	// return to beginning of file
-	file.seekg(0);
-
-	// make sure there are no extra lines at the end of the file nor spaces!!!!!
-	while (!file.eof())
-	{
-
-		// initial push into one dimention 
-		vect.push_back(vector<string>());
-		for (k = 0; k < colnum; k++)
-		{
-			getline(file, temp, ',');
-			vect[i].push_back(temp);
-		}
-
-		getline(file, temp2);
-		vect[i].push_back(temp2);
-
-		//if (temp[0] == " ")
-		//{
-		//	// swap each character and pop one off the end
-		//}
+	vector<vector<int> > populate_adj_lst(graph, HOSTNUM + SOURCENUM);
 
 
-
-		//stringstream ss;
-		//ss << i;
-		//temp3 = ss.str();
-
-		//vect[i].push_back(temp3);
-
-
-
-		i++;
-
-	}
-
-
-
-
-
-
-
-
-	return vect;
 
 }
-
