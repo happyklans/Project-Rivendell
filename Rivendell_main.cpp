@@ -10,8 +10,7 @@
 #include <cstdlib>
 #include <vector>
 #include <algorithm>
-#include "stdafx.h"
-
+#include <cmath>
 
 using namespace std;
 
@@ -39,7 +38,6 @@ private:
 	double cost, cap;
 	int head, tail;
 };
-
 edge_data::edge_data(int i1, int i2, double d1, double d2) //default constructor
 {
 	cost = d1;
@@ -76,7 +74,7 @@ vector<vector<int> > populate_adj_lst(vector<edge> graph, int node_num) // retur
 
 	int node_ID;
 	int edge_ID;
-	int edges;
+	unsigned int edges;
 	std::vector<int> adjlist;
 	std::vector<std::vector<int>> adjlistholder;
 
@@ -90,21 +88,228 @@ vector<vector<int> > populate_adj_lst(vector<edge> graph, int node_num) // retur
 
 	for (; node_ID <= node_num; node_ID++);
 	{
+		adjlistholder.push_back(vector<int>());
 		for (; edge_ID < edges; edge_ID++)
 		{
 			if (iter_info.head_val() == node_ID)
 			{
-				adjlist[node_ID] += edge_ID;
-
+				adjlistholder[node_ID].push_back(edge_ID);
 			}
 			iter_info.update_data(graph[edge_ID].head, graph[edge_ID].tail, graph[edge_ID].cost, graph[edge_ID].cap); // grab new info
 
-			adjlistholder[node_ID] = adjlist; //add list of adjacent edges to adjacent edge superstructure
 			adjlist.clear(); // empty adjlist for next iteration
 		}
 	}
 
 	return(adjlistholder);
+}
+vector<vector<string> > readIn(vector<vector<string> > vect, string filename);
+vector<edge> create_network(double localpref[HOSTNUM][SOURCENUM], double localbalance[HOSTNUM], double localcapacity[HOSTNUM]);
+vector<double> ssp_mincost(vector<edge> localgraph);
+double gradient(vector<edge> localgraph, int index);
+double linesearch(vector<edge> localgraph, vector<double> localdescent, vector<double> localflow);
+
+
+//
+//[city name][][][][][][][][][][][][][][][][][][][][][][][][][][][]
+//[population][][][][][][][][][][][][][][][][][][][][][][][][][][][]
+//[city number][][][][][][][][][][][][][][][][][][][][][][][][][][][]
+//[index number][][][][][][][][][][][][][][][][][][][][][][][][][][][]...........n
+//
+//
+
+
+
+int main()
+
+{
+	vector<vector<string> > cities, asylumapps, asylumgranted;
+
+	// Specify filepaths
+	cities = readIn(cities, "CityPop200K.csv");
+	asylumapps = readIn(asylumapps, "AsylumAppsFirstTime.csv");
+	asylumgranted = readIn(asylumgranted, "AsylumDecisionsFirstTime.csv");
+
+	// Print statements to see data format, REMOVE
+	for (int j = 0; j < cities[1].size(); j++)
+	{
+		cout << cities[1][j] << ' ';
+	}
+	cout << "\n";
+
+	for (int j = 0; j < asylumapps[1].size(); j++)
+	{
+		cout << asylumapps[1][j] << ' ';
+	}
+	cout << "\n";
+
+	for (int j = 0; j < asylumgranted[1].size(); j++)
+	{
+		cout << asylumgranted[1][j] << ' ';
+	}
+	cout << "\n";
+
+	//costs
+	double pref[HOSTNUM][SOURCENUM] = {};
+	double balance[HOSTNUM] = {};
+
+	// edge capacity
+	double capacity[HOSTNUM] = {};
+
+	// edge flow decision variables
+	double xflow[HOSTNUM][SOURCENUM] = {};
+	double yflow[HOSTNUM] = {};
+
+	double country_pref[28][SOURCENUM] = {};
+	double app_array[28][SOURCENUM] = {};
+	double grant_array[28][SOURCENUM] = {};
+	double app_totals[SOURCENUM] = {};
+
+	// Extracts data from vector strings, places into arrays
+	for (int j = 0; j < 28; j++)
+	{
+		for (int i = 0; i < SOURCENUM; i++)
+		{
+			app_array[j][i] = atof(asylumapps[j + 1][i + 1].c_str());
+			grant_array[j][i] = atof(asylumgranted[j + 1][i + 1].c_str());
+			app_totals[i] = app_totals[i] + app_array[j][i];
+		}
+	}
+
+	for (int j = 0; j < 28; j++)
+	{
+		for (int i = 0; i < SOURCENUM; i++)
+		{
+			country_pref[j][i] = app_array[j][i] / app_totals[i];
+		}
+	}
+
+	int skip = 1;
+	for (int j = 1; j < cities.size(); j++)
+	{
+		int tempid = atoi(cities[j][2].c_str());
+
+		if (tempid == 0)
+		{
+			skip = skip + 1;
+			continue;
+		}
+
+		for (int i = 0; i < SOURCENUM; i++)
+		{
+			pref[j - skip][i] = country_pref[tempid - 1][i];
+		}
+
+		capacity[j - skip] = atof(cities[j][1].c_str());
+	}
+
+	// Create network
+	vector<edge> graph = create_network(pref, balance, capacity);
+
+	// Print statement, REMOVE
+	for (int i = 0; i < 10; i++) {
+		cout << graph[i].cost << ' ' << graph[i].cap << ' ' << graph[i].head << ' ' << graph[i].tail << endl;
+	}
+
+	// Create adjacency list
+	vector<vector<int> > adj_list = populate_adj_lst(graph, HOSTNUM + SOURCENUM);
+
+	// Initialize flow
+	vector<double> flow = ssp_mincost(graph);
+
+	// Begin main loop
+
+	// Define exit tolerance;
+	double tol = 0.001;
+
+	for (int rep = 0; true; rep++) {
+		// Update graph balance edge costs with gradient
+		for (unsigned int b_edge = HOSTNUM*SOURCENUM; b_edge < graph.size(); b_edge++) {
+			graph[b_edge].cost = gradient(graph, b_edge);
+		}
+
+		// Solve min cost on updated graph to find improving direction
+		vector<double> descent = ssp_mincost(graph);
+
+		// Line search for optimal step size
+		double stepsize = linesearch(graph, descent, flow);
+
+		// Update flow
+		vector<double> oldflow = flow;
+		double tempsum = 0;
+		for (unsigned int i = 0; i < flow.size(); i++) {
+			flow[i] = flow[i] + stepsize*(descent[i] - flow[i]);
+			tempsum = tempsum + pow((oldflow[i] - flow[i]), 2);
+		}
+
+		// Check stopping criterion
+		if (tempsum < tol) {
+			cout << "Algorithm has converged. \n";
+			break;
+		}
+		else if (rep > pow(10, 0)) {
+			cout << "Algorithm failed to converge. \n";
+			exit(-1);
+		}
+	}
+
+	cin.get();
+	cin.get();
+
+}
+
+double gradient(vector<edge> localgraph, int index) {
+	double gradval = 0;
+	cout << "Finish gradient function. \n";
+	return gradval;
+}
+
+double linesearch(vector<edge> localgraph, vector<double> localdescent, vector<double> localflow) {
+	double lambda = 0;
+	cout << "Finish linesearch function. \n";
+	return lambda;
+}
+
+vector<double> ssp_mincost(vector<edge> localgraph) {
+	vector<double> localflow;
+	cout << "Finish ssp_mincost function. \n";
+	return localflow;
+}
+
+vector<edge> create_network(double localpref[HOSTNUM][SOURCENUM], double localbalance[HOSTNUM], double localcapacity[HOSTNUM]) {
+
+	vector<edge> localgraph;
+	// Initialize graph as vector of edges
+	int count = 0;
+	for (int j = 0; j < HOSTNUM; j++) {
+		for (int i = 0; i < SOURCENUM; i++) {
+			localgraph.push_back(edge());
+			localgraph[count].cost = localpref[j][i];
+			localgraph[count].cap = localcapacity[j];
+			localgraph[count].head = i;
+			localgraph[count].tail = j + SOURCENUM;
+			count++;
+		}
+	}
+	for (int j = 0; j < HOSTNUM; j++) {
+		localgraph.push_back(edge());
+		localgraph[count].cost = localbalance[j];
+		localgraph[count].cap = localcapacity[j];
+		localgraph[count].head = j + SOURCENUM;
+		localgraph[count].tail = HOSTNUM + SOURCENUM;
+		count++;
+	}
+
+	// Create residual edges at odd indexes
+	unsigned int sz = localgraph.size();
+	for (unsigned int i = 0; i < sz; i++) {
+		localgraph.insert(localgraph.begin() + 2 * i + 1, edge());
+		localgraph[2 * i + 1].cost = -localgraph[2 * i].cost;
+		localgraph[2 * i + 1].cap = 0;
+		localgraph[2 * i + 1].head = localgraph[2 * i].tail;
+		localgraph[2 * i + 1].tail = localgraph[2 * i].head;
+	}
+	return localgraph;
 }
 
 vector<vector<string> > readIn(vector<vector<string> > vect, string filename)
@@ -160,157 +365,7 @@ vector<vector<string> > readIn(vector<vector<string> > vect, string filename)
 	}
 
 
-
-
-
-
-
-
 	return vect;
 
 }
 
-//
-//[city name][][][][][][][][][][][][][][][][][][][][][][][][][][][]
-//[population][][][][][][][][][][][][][][][][][][][][][][][][][][][]
-//[city number][][][][][][][][][][][][][][][][][][][][][][][][][][][]
-//[index number][][][][][][][][][][][][][][][][][][][][][][][][][][][]...........n
-//
-//
-
-
-
-int main()
-
-{
-
-	vector<vector<string> > cities, asylumapps, asylumgranted;
-
-	cities = readIn(cities, "CityPop200K.csv");
-	asylumapps = readIn(asylumapps, "AsylumAppsFirstTime.csv");
-	asylumgranted = readIn(asylumgranted, "AsylumDecisionsFirstTime.csv");
-
-	// displaying the fields
-	// note that if you swap the j parameter for 0,1,2,3 
-	// you will be able to search on that specific field/ column etc. 
-	// please check formatting of file as the delimiting character is a comma!!!!!!!!!!!!
-
-	for (int j = 0; j < cities[1].size(); j++)
-	{
-		cout << cities[1][j] << ' ';
-	}
-	cout << "\n";
-
-	for (int j = 0; j < asylumapps[1].size(); j++)
-	{
-		cout << asylumapps[1][j] << ' ';
-	}
-	cout << "\n";
-
-	for (int j = 0; j < asylumgranted[1].size(); j++)
-	{
-		cout << asylumgranted[1][j] << ' ';
-	}
-	cout << "\n";
-
-	//costs
-	double pref[HOSTNUM][SOURCENUM] = {};
-	double balance[HOSTNUM] = {};
-
-	// edge capacity
-	double capacity[HOSTNUM] = {};
-
-	// edge flow decision variables
-	double xflow[HOSTNUM][SOURCENUM] = {};
-	double yflow[HOSTNUM] = {};
-
-	double country_pref[28][SOURCENUM] = {};
-	double app_array[28][SOURCENUM] = {};
-	double grant_array[28][SOURCENUM] = {};
-	double app_totals[SOURCENUM] = {};
-
-	for (int j = 0; j < 28; j++)
-	{
-		for (int i = 0; i < SOURCENUM; i++)
-		{
-			app_array[j][i] = atof(asylumapps[j + 1][i + 1].c_str());
-			grant_array[j][i] = atof(asylumgranted[j + 1][i + 1].c_str());
-			app_totals[i] = app_totals[i] + app_array[j][i];
-		}
-	}
-
-	for (int j = 0; j < 28; j++)
-	{
-		for (int i = 0; i < SOURCENUM; i++)
-		{
-			country_pref[j][i] = app_array[j][i] / app_totals[i];
-		}
-	}
-
-	int skip = 1;
-	for (int j = 1; j < cities.size(); j++)
-	{
-		int tempid = atoi(cities[j][2].c_str());
-
-		if (tempid == 0)
-		{
-			skip = skip + 1;
-			continue;
-		}
-
-		for (int i = 0; i < SOURCENUM; i++)
-		{
-			pref[j - skip][i] = country_pref[tempid - 1][i];
-		}
-
-		capacity[j - skip] = atof(cities[j][1].c_str());
-	}
-
-	// Initialize graph as vector of edges
-	vector<edge> graph;
-	int count = 0;
-	for (int j = 0; j < HOSTNUM; j++)
-	{
-		for (int i = 0; i < SOURCENUM; i++)
-		{
-			graph.push_back(edge());
-			graph[count].cost = pref[j][i];
-			graph[count].cap = capacity[j];
-			graph[count].head = i;
-			graph[count].tail = j + SOURCENUM;
-			count++;
-		}
-	}
-
-	for (int j = 0; j < HOSTNUM; j++)
-	{
-		graph.push_back(edge());
-		graph[count].cost = balance[j];
-		graph[count].cap = capacity[j];
-		graph[count].head = j + SOURCENUM;
-		graph[count].tail = HOSTNUM + SOURCENUM;
-		count++;
-	}
-
-	// Create residual edges at odd indexes
-	unsigned int sz = graph.size();
-	for (unsigned int i = 0; i < sz; i++)
-	{
-		graph.insert(graph.begin() + 2 * i + 1, edge());
-		graph[2 * i + 1].cost = -graph[2 * i].cost;
-		graph[2 * i + 1].cap = 0;
-		graph[2 * i + 1].head = graph[2 * i].tail;
-		graph[2 * i + 1].tail = graph[2 * i].head;
-	}
-	// for (int i = 0; i < 10; i++) {
-	// cout << graph[i].cost << ' ' << graph[i].cap << ' ' << graph[i].head << ' ' << graph[i].tail << endl;
-	// }
-
-	cin.get();
-	cin.get();
-
-	vector<vector<int> > populate_adj_lst(graph, HOSTNUM + SOURCENUM);
-
-
-
-}
