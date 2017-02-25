@@ -18,12 +18,17 @@ using namespace std;
 
 // Parameters for array sizes. SOURCENUM is the number of refugee source nodes,
 // HOSTNUM is the number of host cities.
-const int SOURCENUM = 6;
-const int HOSTNUM = 302;
+//const int SOURCENUM = 6;
+//const int HOSTNUM = 302;
+//const int COUNTRYNUM = 28;
+const int SOURCENUM = 2;
+const int HOSTNUM = 3;
+const int COUNTRYNUM = 3;
+
 
 // Objective weights alpha:preference, beta:balance
-const double alpha = 0.001;
-const double beta = 0.999;
+double alpha = .05;
+double beta = .95;
 
 struct edge {
 	double cost;
@@ -51,6 +56,8 @@ double lnSrchFncB(vector<edge> localgraph, vector<double> localflow, vector<doub
 double lnSrchFncC(vector<edge> localgraph, vector<double> localdescent);
 double objFuncVal(vector<edge> localgraph, vector<double> localflow);
 vector<vector<int> > makeAdjList(vector<edge> localgraph);
+double prefVal(vector<edge> localgraph, vector<double> localflow);
+double balanceVal(vector<edge> localgraph, vector<double> localflow);
 
 //
 //[city name][][][][][][][][][][][][][][][][][][][][][][][][][][][]
@@ -67,9 +74,12 @@ int main()
 	vector<vector<string> > cities, asylumapps, asylumgranted;
 
 	// Specify filepaths
-	cities = readIn(cities, "CityPop200K.csv");
-	asylumapps = readIn(asylumapps, "AsylumAppsFirstTime.csv");
-	asylumgranted = readIn(asylumgranted, "AsylumDecisionsFirstTime.csv");
+	//cities = readIn(cities, "CityPop200K.csv");
+	//asylumapps = readIn(asylumapps, "AsylumAppsFirstTime.csv");
+	//asylumgranted = readIn(asylumgranted, "AsylumDecisionsFirstTime.csv");
+	cities = readIn(cities, "TestPop.csv");
+	asylumapps = readIn(asylumapps, "TestApps.csv");
+	asylumgranted = readIn(asylumgranted, "TestDecisions.csv");
 
 	// Print statements to see data format, REMOVE
 	//for (int j = 0; j < cities[1].size(); j++)
@@ -101,14 +111,14 @@ int main()
 	double xflow[HOSTNUM][SOURCENUM] = {};
 	double yflow[HOSTNUM] = {};
 
-	double country_pref[28][SOURCENUM] = {};
-	double app_array[28][SOURCENUM] = {};
-	double grant_array[28][SOURCENUM] = {};
+	double country_pref[COUNTRYNUM][SOURCENUM] = {};
+	double app_array[COUNTRYNUM][SOURCENUM] = {};
+	double grant_array[COUNTRYNUM][SOURCENUM] = {};
 	double app_totals[SOURCENUM] = {};
 	double grant_totals[SOURCENUM] = {};
 
 	// Extracts data from vector strings, places into arrays
-	for (int j = 0; j < 28; j++)
+	for (int j = 0; j < COUNTRYNUM; j++)
 	{
 		for (int i = 0; i < SOURCENUM; i++)
 		{
@@ -117,9 +127,10 @@ int main()
 			app_totals[i] = app_totals[i] + app_array[j][i];
 			grant_totals[i] = grant_totals[i] + grant_array[j][i];
 		}
-	}
 
-	for (int j = 0; j < 28; j++)
+	}
+	
+	for (int j = 0; j < COUNTRYNUM; j++)
 	{
 		for (int i = 0; i < SOURCENUM; i++)
 		{
@@ -127,8 +138,9 @@ int main()
 		}
 	}
 
+
 	int skip = 1;
-	for (int j = 1; j < cities.size(); j++)
+	for (int j = 1; j < cities.size() - 1; j++)
 	{
 		int tempid = atoi(cities[j][2].c_str());
 
@@ -151,9 +163,9 @@ int main()
 	vector<edge> staticgraph = graph;
 	
 	// Print statement, REMOVE
-	/*for (int i = 0; i < 10; i++) {
-		cout << graph[i].cost << ' ' << graph[i].cap << ' ' << graph[i].head << ' ' << graph[i].tail << endl;
-	}*/
+	//for (unsigned int i = 0; i < graph.size(); i++) {
+	//	cout << graph[i].cost << ' ' << graph[i].cap << ' ' << graph[i].head << ' ' << graph[i].tail << endl;
+	//}
 
 	// Create adjacency list
 	vector<vector<int> > adj_list = makeAdjList(graph);
@@ -165,27 +177,25 @@ int main()
 	// Random flow
 	cout << "Initializing flow \n";
 	vector<double> flow = ssp_mincost(graph, grant_totals);
-	//random_device rd;
-	//mt19937 gen(rd());
-	//for (unsigned int edge = 0; edge < graph.size(); edge++) {
-	//	std::uniform_real_distribution<> dis(0, 1);
-	//	flow.push_back(dis(gen) * graph[edge].cap);
-	//}
-	//for (unsigned int edge = 0; edge < graph.size(); edge++) {
-	//	flow.push_back(0.5*graph[edge].cap);
-	//}
+	cout << "Initial flow \n";
+	for (int j = 0; j < HOSTNUM; j++) {
+		cout << flow[j + HOSTNUM*SOURCENUM] << ' ';
+	}
+	cout << endl;
 
 	// Begin main loop
 
-	double tol = 0.001; 	// Define exit tolerance;
+	double tol = 1; 	// Define exit tolerance;
 
 	for (int rep = 0; true; rep++) {
 		// Update graph balance edge costs with gradient
 		cout << "Calculating gradient \n";
 		for (int b_edge = 0; b_edge < HOSTNUM; b_edge++) {
+			cout << gradient(graph, flow, b_edge) << ' ';
 			graph[b_edge + HOSTNUM*SOURCENUM].cost = gradient(graph, flow, b_edge);
 			// cout << flow[b_edge + HOSTNUM*SOURCENUM] / graph[b_edge + HOSTNUM*SOURCENUM].cap << ' ' << graph[b_edge + HOSTNUM*SOURCENUM].cost << '\n';
 		}
+		cout << endl;
 		
 		// TEST DIJKSTRA
 	/*	cout << "Finding shortest path. \n";
@@ -198,6 +208,8 @@ int main()
 		// Solve min cost on updated graph to find improving direction
 		cout << "Solving SSP subproblem \n";
 		vector<double> direction = ssp_mincost(graph, grant_totals);
+		
+		
 
 		// TEST LINESEARCH
 		//vector<double> direction;
@@ -210,6 +222,12 @@ int main()
 		for (unsigned int i = 0; i < flow.size(); i++) {
 			descent.push_back(direction[i] - flow[i]);
 		}
+
+		cout << "Improving direction \n";
+		for (int j = 0; j < HOSTNUM; j++) {
+			cout << descent[j + HOSTNUM*SOURCENUM] << ' ';
+		}
+		cout << endl;
 
 		// Line search for optimal step size
 		cout << "Linesearch \n";
@@ -224,8 +242,9 @@ int main()
 			flow[i] = flow[i] + stepsize*(descent[i]);
 			tempsum = tempsum + pow((oldflow[i] - flow[i]), 2);
 		}
+		cout << "Displacement " << sqrt(tempsum) << endl;
 		
-		cout << objFuncVal(staticgraph, flow) << endl;
+		cout << "Objective function value \n" << objFuncVal(staticgraph, flow) << endl;
 
 		// Check stopping criteria
 		cout << "Checking stopping criteria \n";
@@ -233,11 +252,20 @@ int main()
 			cout << "Algorithm has converged. \n";
 			break; 
 		}
-		else if (rep > pow(10, 2)) { 
+		else if (rep > pow(10, 5)) { 
 			cout << "Algorithm failed to converge. \n";
 			exit(-1); 
 		}
 	}
+
+	cout << "Optimal distribution: \n";
+	for (int j = 0; j < HOSTNUM; j++) {
+		cout << flow[j + HOSTNUM*SOURCENUM] << ' ';
+	}
+	cout << endl;
+	cout << "Preference score: " << prefVal(staticgraph, flow) << endl;
+	cout << "Variance score: " << balanceVal(staticgraph, flow) << endl;
+	cout << "Mean Burden: " << meanBurden(staticgraph, flow) << endl;
 
 	cin.get();
 	cin.get();
@@ -312,21 +340,30 @@ double linesearch(vector<edge> localgraph, vector<double> localdescent, vector<d
 }
 
 double objFuncVal(vector<edge> localgraph, vector<double> localflow) {
-
 	double temp1 = 0, temp2 = 0;
 	int offset = HOSTNUM * SOURCENUM;
-
-	for (int i = 0; i < offset; i++) {
-		temp1 = temp1 + localgraph[i].cost * localflow[i];
-	}
-	temp1 = alpha * temp1;
-
-	for (int i = 0; i < HOSTNUM; i++) {
-		temp2 = temp2 + (meanBurden(localgraph, localflow) - localflow[i + offset] / localgraph[i + offset].cap) ;
-		temp2 = pow(temp2, 2);
-	}
-	temp2 = 1/HOSTNUM * temp2 * beta;
+	temp1 = alpha * prefVal(localgraph, localflow);
+	temp2 = beta * balanceVal(localgraph, localflow);
 	return temp1 + temp2;
+}
+
+double prefVal(vector<edge> localgraph, vector<double> localflow) {
+	double temp = 0;
+	int offset = HOSTNUM * SOURCENUM;
+	for (int i = 0; i < offset; i++) {
+		temp = temp + localgraph[i].cost * localflow[i];
+	}
+	return temp;
+}
+
+double balanceVal(vector<edge> localgraph, vector<double> localflow) {
+	double variance = 0;
+	int offset = HOSTNUM * SOURCENUM;
+	for (int i = 0; i < HOSTNUM; i++) {
+		variance = variance + pow((meanBurden(localgraph, localflow) - localflow[i + offset] / localgraph[i + offset].cap), 2);
+	}
+	variance = 1 / double (HOSTNUM) * variance;
+	return variance;
 }
 
 vector<double> ssp_mincost(vector<edge> localgraph, double localgrant_totals[SOURCENUM]) {
@@ -409,12 +446,13 @@ vector<double> ssp_mincost(vector<edge> localgraph, double localgrant_totals[SOU
 		// Update residual edge cost to new reduced costs
 		for (unsigned int i = 0; i < residualgraph.size(); i++) {
 			residualgraph[i].cost = startingEdgeCosts[i] - nodePotential[residualgraph[i].head] + nodePotential[residualgraph[i].tail];
-			/*if (residualgraph[i].cost < 0) {
-				cout << "Negative reduced cost computed" << endl;
+			if (residualgraph[i].cost < 0) {
+				// residualgraph[i].cost = MAXCOST;
+				/*cout << "Negative reduced cost computed" << endl;
 				cout << startingEdgeCosts[i] << ' ' << nodePotential[residualgraph[i].head] << ' ' << nodePotential[residualgraph[i].tail] << endl;
 				cout << residualgraph[i].head << ' ' << residualgraph[i].tail << endl;
- 				exit(-1);
-			}*/
+ 				exit(-1);*/
+			}
 		}
 
 
