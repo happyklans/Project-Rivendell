@@ -13,22 +13,23 @@
 #include <cmath>
 #include <random>
 #include <set>
+#include <iomanip>
 
 using namespace std;
 
 // Parameters for array sizes. SOURCENUM is the number of refugee source nodes,
 // HOSTNUM is the number of host cities.
-//const int SOURCENUM = 6;
-//const int HOSTNUM = 302;
-//const int COUNTRYNUM = 28;
-const int SOURCENUM = 2;
-const int HOSTNUM = 3;
-const int COUNTRYNUM = 3;
+const int SOURCENUM = 6;
+const int HOSTNUM = 302;
+const int COUNTRYNUM = 28;
+//const int SOURCENUM = 2;
+//const int HOSTNUM = 3;
+//const int COUNTRYNUM = 3;
 
 
 // Objective weights alpha:preference, beta:balance
-double alpha = .05;
-double beta = .95;
+double alpha = .025;
+double beta = .975;
 
 struct edge {
 	double cost;
@@ -74,12 +75,12 @@ int main()
 	vector<vector<string> > cities, asylumapps, asylumgranted;
 
 	// Specify filepaths
-	//cities = readIn(cities, "CityPop200K.csv");
-	//asylumapps = readIn(asylumapps, "AsylumAppsFirstTime.csv");
-	//asylumgranted = readIn(asylumgranted, "AsylumDecisionsFirstTime.csv");
-	cities = readIn(cities, "TestPop.csv");
-	asylumapps = readIn(asylumapps, "TestApps.csv");
-	asylumgranted = readIn(asylumgranted, "TestDecisions.csv");
+	cities = readIn(cities, "CityPop200K.csv");
+	asylumapps = readIn(asylumapps, "AsylumAppsFirstTime.csv");
+	asylumgranted = readIn(asylumgranted, "AsylumDecisionsFirstTime.csv");
+	//cities = readIn(cities, "TestPop.csv");
+	//asylumapps = readIn(asylumapps, "TestApps.csv");
+	//asylumgranted = readIn(asylumgranted, "TestDecisions.csv");
 
 	// Print statements to see data format, REMOVE
 	//for (int j = 0; j < cities[1].size(); j++)
@@ -177,11 +178,11 @@ int main()
 	// Random flow
 	cout << "Initializing flow \n";
 	vector<double> flow = ssp_mincost(graph, grant_totals);
-	cout << "Initial flow \n";
-	for (int j = 0; j < HOSTNUM; j++) {
-		cout << flow[j + HOSTNUM*SOURCENUM] << ' ';
-	}
-	cout << endl;
+	//cout << "Initial flow \n";
+	//for (int j = 0; j < HOSTNUM; j++) {
+	//	cout << flow[j + HOSTNUM*SOURCENUM] << ' ';
+	//}
+	//cout << endl;
 
 	// Begin main loop
 
@@ -191,11 +192,11 @@ int main()
 		// Update graph balance edge costs with gradient
 		cout << "Calculating gradient \n";
 		for (int b_edge = 0; b_edge < HOSTNUM; b_edge++) {
-			cout << gradient(graph, flow, b_edge) << ' ';
+			//cout << gradient(graph, flow, b_edge) << ' ';
 			graph[b_edge + HOSTNUM*SOURCENUM].cost = gradient(graph, flow, b_edge);
 			// cout << flow[b_edge + HOSTNUM*SOURCENUM] / graph[b_edge + HOSTNUM*SOURCENUM].cap << ' ' << graph[b_edge + HOSTNUM*SOURCENUM].cost << '\n';
 		}
-		cout << endl;
+		//cout << endl;
 		
 		// TEST DIJKSTRA
 	/*	cout << "Finding shortest path. \n";
@@ -223,11 +224,11 @@ int main()
 			descent.push_back(direction[i] - flow[i]);
 		}
 
-		cout << "Improving direction \n";
-		for (int j = 0; j < HOSTNUM; j++) {
-			cout << descent[j + HOSTNUM*SOURCENUM] << ' ';
-		}
-		cout << endl;
+		//cout << "Improving direction \n";
+		//for (int j = 0; j < HOSTNUM; j++) {
+		//	cout << descent[j + HOSTNUM*SOURCENUM] << ' ';
+		//}
+		//cout << endl;
 
 		// Line search for optimal step size
 		cout << "Linesearch \n";
@@ -244,7 +245,7 @@ int main()
 		}
 		cout << "Displacement " << sqrt(tempsum) << endl;
 		
-		cout << "Objective function value \n" << objFuncVal(staticgraph, flow) << endl;
+		cout << setprecision(12) << "Objective function value \n" << objFuncVal(staticgraph, flow) << endl;
 
 		// Check stopping criteria
 		cout << "Checking stopping criteria \n";
@@ -258,11 +259,11 @@ int main()
 		}
 	}
 
-	cout << "Optimal distribution: \n";
-	for (int j = 0; j < HOSTNUM; j++) {
-		cout << flow[j + HOSTNUM*SOURCENUM] << ' ';
-	}
-	cout << endl;
+	//cout << "Optimal distribution: \n";
+	//for (int j = 0; j < HOSTNUM; j++) {
+	//	cout << flow[j + HOSTNUM*SOURCENUM] << ' ';
+	//}
+	//cout << endl;
 	cout << "Preference score: " << prefVal(staticgraph, flow) << endl;
 	cout << "Variance score: " << balanceVal(staticgraph, flow) << endl;
 	cout << "Mean Burden: " << meanBurden(staticgraph, flow) << endl;
@@ -277,8 +278,8 @@ double gradient(vector<edge> localgraph, vector<double> localflow, int index) {
 	double temp1 = 0;
 	int offset = HOSTNUM * SOURCENUM;
 	double R = (double) HOSTNUM;
+	double temp2 = meanBurden(localgraph, localflow);
 	for (int node1 = 0; node1 < HOSTNUM; node1++) {
-		double temp2 = meanBurden(localgraph, localflow);
 		temp2 = temp2 - ( localflow[node1 + offset] / localgraph[node1 + offset].cap );
 
 		if (node1 == index) {
@@ -298,7 +299,7 @@ double meanBurden(vector<edge> localgraph, vector<double> localflow) {
 	for (int node2 = 0; node2 < HOSTNUM; node2++) {
 		temp2 = temp2 + (localflow[node2 + offset] / localgraph[node2 + offset].cap);
 	}
-	return temp2/HOSTNUM;
+	return temp2 / (double) HOSTNUM;
 }
 
 double lnSrchFncA(vector<edge> localgraph, vector<double> localflow, int index) { 
@@ -311,7 +312,7 @@ double lnSrchFncB(vector<edge> localgraph, vector<double> localflow, vector<doub
 	for (int i = 0; i < HOSTNUM; i++) {
 		temp = temp + lnSrchFncA(localgraph, localdescent, i) * lnSrchFncA(localgraph, localflow, i);
 	}
-	temp = 2 * beta / HOSTNUM * temp;
+	temp = 2 * beta / (double) HOSTNUM * temp;
 	
 	double temp2 = 0;
 	for (int i = 0; i < HOSTNUM * SOURCENUM; i++) {
@@ -326,7 +327,7 @@ double lnSrchFncC(vector<edge> localgraph, vector<double> localdescent) {
 	for (int i = 0; i < HOSTNUM; i++) {
 		temp = temp + pow(lnSrchFncA(localgraph, localdescent, i), 2);
 	}
-	temp = 2 * beta / HOSTNUM *temp;
+	temp = 2 * beta / (double) HOSTNUM *temp;
 	return temp;
 }
 
