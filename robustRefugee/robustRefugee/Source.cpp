@@ -119,7 +119,7 @@ int main()
 
 	rho = 1;
 	
-	solver(0.9, 0.1, rho);
+	solver(0.5, 0.5, rho);
 
 
 	cin.get();
@@ -132,16 +132,16 @@ void solver(double alpha, double beta, double rho)
 
 	double affinePerturb = 0.1; // Perturbation factor
 
-	double tol = .01;		// Define exit tolerance;
+	double tol = 1;		// Define exit tolerance;
 	
 	vector<vector<string> > cities, asylumapps, asylumgranted;
 
 	fstream objVals;
 	fstream	appAssignments;
 
-	objVals.open("RA-RobustobjValsE-02alpha90R1.txt", ios::app);
+	objVals.open("RA-RobustobjValsE-00alpha50R1.txt", ios::app);
 
-	appAssignments.open("RA-RobustassignmentsE-02alpha90R1.txt", ios::app);
+	appAssignments.open("RA-RobustassignmentsE-00alpha50R1.txt", ios::app);
 
 	// Specify filepaths
 	cities = readIn(cities, "CityPop200K.csv");
@@ -306,7 +306,7 @@ void solver(double alpha, double beta, double rho)
 
 		normV = sqrt(normV);
 
-		double mean = meanBurden(graph, flow);
+		double mean = meanBurden(staticgraph, flow);
 		
 
 		for (int i = 0; i < HOSTNUM*SOURCENUM; i++)
@@ -317,7 +317,7 @@ void solver(double alpha, double beta, double rho)
 		
 		for (int b_edge = 0; b_edge < HOSTNUM; b_edge++)
 		{
-			graph[b_edge + HOSTNUM*SOURCENUM].cost = gradient(graph, flow, b_edge, alpha, beta, mean);
+			graph[b_edge + HOSTNUM*SOURCENUM].cost = gradient(staticgraph, flow, b_edge, alpha, beta, mean);
 		}
 
 		// Solve min cost on updated graph to find improving direction
@@ -619,7 +619,7 @@ double fPrime(double lambda, vector<double> fixedTerm, double alpha, double rho)
 	
 	// Calculate p'(x)
 
-	primeVal = fixedTerm[0] = rho * (fixedTerm[1] + lambda * fixedTerm[2]) / sqrt(fixedTerm[3] + 2 * fixedTerm[1] * lambda + fixedTerm[2] * pow(lambda, 2));
+	primeVal = fixedTerm[0] + rho * (fixedTerm[1] + lambda * fixedTerm[2]) / sqrt(fixedTerm[3] + 2 * fixedTerm[1] * lambda + fixedTerm[2] * pow(lambda, 2));
 
 	primeVal = alpha * primeVal;
 
