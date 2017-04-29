@@ -1,0 +1,331 @@
+Country,Pop,ID
+Austria,8451860,0
+Wien,1741246,1
+Graz,265778,1
+Belgium,11203992,0
+Bruxelles / Brussel,1183841,2
+Antwerpen,513915,2
+Gent,251984,2
+Charleroi,203640,2
+Liège,382637,2
+Bulgaria,7245677,2
+Sofia,1221292,2
+Plovdiv,341041,2
+Varna,335819,2
+Bulgaria,7245677,0
+Sofia,1221292,3
+Plovdiv,341041,3
+Varna,335819,3
+Croatia,4253000,0
+Zagreb,790017,4
+Cyprus,796900,0
+Lefkosia,234200,5
+Czech Republic,10538275,0
+Praha,1259079,6
+Brno,377440,6
+Ostrava,294200,6
+Denmark,5602628,0
+København,559440,7
+Århus,319094,7
+Aalborg,203448,7
+Estonia,1315819,0
+Tallinn,411063,8
+Finland,5451270,0
+Helsinki / Helsingfors,612664,9
+Helsinki / Helsingfors (greater city),1090616,9
+Tampere / Tammerfors,220446,9
+Espoo / Esbo,260753,9
+Vantaa / Vanda,208098,9
+France,65615841,0
+Paris,2229870,10
+Paris (greater city),6728051,10
+Lyon,1333618,10
+Toulouse,734976,10
+Strasbourg,475993,10
+Bordeaux,742115,10
+Nantes,609199,10
+Lille,1128828,10
+Montpellier,441929,10
+Saint-Etienne,376266,10
+Le Havre,236040,10
+Rennes,414186,10
+Nancy,254030,10
+Metz,217104,10
+Reims,210177,10
+Orléans,276686,10
+Dijon,247164,10
+Clermont-Ferrand,283635,10
+Caen,217219,10
+Grenoble,408046,10
+Toulon,425505,10
+Tours,281151,10
+Angers,269176,10
+Brest,207142,10
+Mulhouse,255337,10
+Perpignan,261939,10
+Nîmes,244598,10
+Aix-en-Provence,360109,10
+Marseille,1049857,10
+Nice,519525,10
+Lens - Liévin,241629,10
+Rouen,488826,10
+Germany,80767463,0
+Berlin,3421829,11
+Hamburg,1746342,11
+München,1407836,11
+Köln,1034175,11
+Frankfurt am Main,701350,11
+Essen,569884,11
+Stuttgart,604297,11
+Leipzig,531562,11
+Dresden,530754,11
+Dortmund,575944,11
+Düsseldorf,598686,11
+Bremen,548547,11
+Hannover,518386,11
+Nürnberg,498876,11
+Bochum,361734,11
+Bielefeld,328864,11
+Halle an der Saale,231565,11
+Magdeburg,231021,11
+Wiesbaden,273871,11
+Freiburg im Breisgau,220286,11
+Erfurt,204880,11
+Augsburg,276542,11
+Bonn,311287,11
+Karlsruhe,299103,11
+Mönchengladbach,255430,11
+Mainz,204268,11
+Kiel,241533,11
+Rostock,203431,11
+Duisburg,486855,11
+Mannheim,296690,11
+Gelsenkirchen,257850,11
+Münster,299708,11
+Chemnitz,242022,11
+Braunschweig,247227,11
+Aachen,241683,11
+Krefeld,222058,11
+Oberhausen,209097,11
+Lübeck,212958,11
+Wuppertal,343488,11
+Greece,10816286,0
+Athina,664046,12
+Athina (greater city),2641511,12
+Thessaloniki,315196,12
+Hungary,9877365,0
+Budapest,1744665,13
+Debrecen,203914,13
+Ireland,4570881,0
+Dublin,516255,14
+Dublin (greater city),1261332,14
+Italy,60782668,0
+Roma,2863322,15
+Milano,1324169,15
+Milano (greater city),3207006,15
+Napoli,989111,15
+Napoli (greater city),3176107,15
+Torino,902137,15
+Palermo,678492,15
+Genova,596958,15
+Firenze,377207,15
+Bari,322751,15
+Bologna,384202,15
+Catania,315576,15
+Venezia,264534,15
+Verona,259966,15
+Trieste,204849,15
+Taranto,203257,15
+Padova,209678,15
+Messina,241997,15
+Latvia,2001468,0
+Riga,643368,16
+Lithuania,2943472,0
+Vilnius,539707,17
+Kaunas,304012,17
+Luxembourg (Grand Duchy),493500,0
+Luxembourg (City),493500,18
+Malta,412970,0
+Valletta,203250,19
+Netherlands,16829289,0
+'s-Gravenhage,508940,20
+Amsterdam,810938,20
+Amsterdam (greater city),1046551,20
+Rotterdam,618357,20
+Rotterdam (greater city),980729,20
+Utrecht,328164,20
+Eindhoven,220920,20
+Tilburg,210267,20
+Poland,38478602,0
+Warszawa,1735442,21
+Lódz,706004,21
+Kraków,761873,21
+Wroclaw,634487,21
+Poznan,545680,21
+Gdansk,461489,21
+Szczecin,407180,21
+Bydgoszcz,357652,21
+Lublin,341722,21
+Katowice,301834,21
+Górnoslaski Zwiazek Metropolitalny,1893271,21
+Bialystok,295459,21
+Torun,203158,21
+Czestochowa,230123,21
+Radom,217201,21
+Gdynia,247820,21
+Sosnowiec,209274,21
+Portugal,10487289,0
+Lisboa,524282,22
+Lisboa (greater city),1849472,22
+Porto,227535,22
+Porto (greater city),968905,22
+Sintra,379963,22
+Vila Nova de Gaia,303149,22
+Romania,22298253,0
+Bucuresti,2110878,23
+Cluj-Napoca,321427,23
+Timisoara,333825,23
+Craiova,307193,23
+Braila,213089,23
+Oradea,223317,23
+Constanta,319266,23
+Iasi,357868,23
+Galati,306046,23
+Brasov,291363,23
+Ploiesti,235041,23
+Slovakia,5421349,0
+Bratislava,419678,24
+Kosice,239464,24
+Slovenia,2061085,0
+Ljubljana,285857,25
+Spain,46771341,0
+Madrid,3165235,26
+Barcelona,1602386,26
+Barcelona (greater city),3176357,26
+Valencia,786424,26
+Sevilla,696676,26
+Zaragoza,666058,26
+Málaga,566913,26
+Murcia,439712,26
+Las Palmas,382283,26
+Valladolid,306830,26
+Palma de Mallorca,399093,26
+Vitoria/Gasteiz,242082,26
+Oviedo,223765,26
+Bilbao,346574,26
+Bilbao (greater city),777787,26
+Córdoba,328041,26
+Alicante/Alacant,332067,26
+Vigo,294997,26
+Gijón,275735,26
+L'Hospitalet de Llobregat,253518,26
+Santa Cruz de Tenerife,205279,26
+A Coruña,244810,26
+Granada,237540,26
+Badalona,217210,26
+Móstoles,205712,26
+Elche/Elx,228647,26
+Cartagena,216451,26
+Sabadell,207444,26
+Jerez de la Frontera,212226,26
+Alcalá de Henares,200768,26
+Terrassa,215517,26
+Sweden,9256347,0
+Stockholm,810120,27
+Stockholm (greater city),1489127,27
+Göteborg,500197,27
+Malmö,286535,27
+United Kingdom,64100000,0
+London (greater city),8477600,28
+Birmingham,1096800,28
+West Midlands urban area,2462300,28
+Leeds,763900,28
+Glasgow,598100,28
+Bradford,527300,28
+Liverpool,471900,28
+Liverpool (greater city),1068200,28
+Edinburgh,490100,28
+Manchester,517300,28
+Greater Manchester,2723900,28
+Cardiff,353000,28
+Sheffield,561900,28
+Bristol,440000,28
+Belfast,282500,28
+Newcastle upon Tyne,288300,28
+Tyneside conurbation,839700,28
+Leicester,335700,28
+Leicester (greater city),487200,28
+Aberdeen,228100,28
+Portsmouth,208300,28
+Portsmouth (greater city),528000,28
+Coventry,333600,28
+Kingston-upon-Hull,257600,28
+Stoke-on-trent,250600,28
+Wolverhampton,252300,28
+Nottingham,312600,28
+Greater Nottingham,652500,28
+Wirral,320600,28
+Barnet,372000,28
+Bexley,238300,28
+Brent,319000,28
+Bromley,319600,28
+Camden,232300,28
+Croydon,374400,28
+Ealing,342300,28
+Enfield,322500,28
+Greenwich,266300,28
+Hackney,260300,28
+Haringey,265500,28
+Harrow,244700,28
+Havering,244000,28
+Hillingdon,289700,28
+Hounslow,264000,28
+Islington,218400,28
+Lambeth,316200,28
+Lewisham,289100,28
+Merton,203400,28
+Newham,321300,28
+Redbridge,290700,28
+Southwark,300500,28
+Tower Hamlets,278500,28
+Waltham Forest,266900,28
+Wandsworth,311300,28
+Westminster,230100,28
+Kirklees,429600,28
+North Lanarkshire,337800,28
+Wakefield,330500,28
+Dudley,315100,28
+Wigan,320300,28
+Doncaster,303900,28
+Stockport,285900,28
+Sefton,273400,28
+Sandwell,315500,28
+Sunderland,276500,28
+Bolton,280200,28
+Walsall,273200,28
+Medway,272600,28
+Rotherham,259400,28
+Brighton and Hove,279600,28
+Plymouth,260400,28
+Swansea,240800,28
+Derby,251900,28
+Barnsley,236800,28
+Southampton,243700,28
+Oldham,228000,28
+Salford,240500,28
+Tameside,220700,28
+Trafford,231300,28
+Milton Keynes,257500,28
+Rochdale,212500,28
+Solihull,209400,28
+Northampton,218100,28
+North Tyneside,202400,28
+Gateshead,200300,28
+Warrington,205800,28
+Luton,209500,28
+York,203400,28
+Swindon,214900,28
+Southend-on-Sea (greater city),265600,28
+Reading (greater city),318500,28
+Preston (greater city),249400,28
+Cheshire West and Chester,331600,28
